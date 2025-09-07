@@ -384,30 +384,30 @@
     <script>
         // بيانات نموذجية لمحاكاة نتائج netstat -an
         const sampleNetstatData = [
-            { protocol: 'TCP', local: '192.168.1.5:54321', foreign: '93.184.216.34:443', status: 'ESTABLISHED', pid: 4521 },
-            { protocol: 'TCP', local: '192.168.1.5:51234', foreign: '172.217.18.206:80', status: 'TIME_WAIT', pid: 3784 },
+            { protocol: 'TCP', local: '192.168.8.5:54321', foreign: '93.184.216.34:443', status: 'ESTABLISHED', pid: 4521 },
+            { protocol: 'TCP', local: '192.168.8.5:51234', foreign: '172.217.18.206:80', status: 'TIME_WAIT', pid: 3784 },
             { protocol: 'TCP', local: '0.0.0.0:135', foreign: '0.0.0.0:0', status: 'LISTENING', pid: 872 },
-            { protocol: 'TCP', local: '192.168.1.5:51235', foreign: '52.114.128.66:443', status: 'ESTABLISHED', pid: 6543 },
-            { protocol: 'UDP', local: '192.168.1.5:5353', foreign: '0.0.0.0:0', status: 'LISTENING', pid: 1234 },
-            { protocol: 'TCP', local: '192.168.1.5:54322', foreign: '104.16.249.249:443', status: 'CLOSING', pid: 5432 },
+            { protocol: 'TCP', local: '192.168.8.5:51235', foreign: '52.114.128.66:443', status: 'ESTABLISHED', pid: 6543 },
+            { protocol: 'UDP', local: '192.168.8.5:5353', foreign: '0.0.0.0:0', status: 'LISTENING', pid: 1234 },
+            { protocol: 'TCP', local: '192.168.8.5:54322', foreign: '104.16.249.249:443', status: 'CLOSING', pid: 5432 },
             { protocol: 'TCP', local: '127.0.0.1:49672', foreign: '127.0.0.1:49673', status: 'ESTABLISHED', pid: 2345 },
-            { protocol: 'UDP', local: '192.168.1.5:1900', foreign: '239.255.255.250:1900', status: 'LISTENING', pid: 1900 },
-            { protocol: 'TCP', local: '192.168.1.5:51236', foreign: '34.237.58.125:443', status: 'ESTABLISHED', pid: 7654 },
-            { protocol: 'TCP', local: '192.168.1.5:51237', foreign: '13.107.42.14:443', status: 'TIME_WAIT', pid: 4321 }
+            { protocol: 'UDP', local: '192.168.8.5:1900', foreign: '239.255.255.250:1900', status: 'LISTENING', pid: 1900 },
+            { protocol: 'TCP', local: '192.168.8.5:51236', foreign: '34.237.58.125:443', status: 'ESTABLISHED', pid: 7654 },
+            { protocol: 'TCP', local: '192.168.8.5:51237', foreign: '13.107.42.14:443', status: 'TIME_WAIT', pid: 4321 }
         ];
 
         // بيانات نموذجية لمحاكاة نتائج arp -a
         const sampleArpData = [
-            { address: '192.168.1.1', mac: '00-1A-2B-3C-4D-5E', type: 'ديناميكي', interface: 'Wi-Fi' },
-            { address: '192.168.1.2', mac: 'A0-B1-C2-D3-E4-F5', type: 'ديناميكي', interface: 'Ethernet' },
-            { address: '192.168.1.3', mac: '1A-2B-3C-4D-5E-6F', type: 'ثابت', interface: 'Wi-Fi' },
-            { address: '192.168.1.4', mac: 'FE-DC-BA-98-76-54', type: 'ديناميكي', interface: 'Ethernet' },
-            { address: '192.168.1.5', mac: '11-22-33-44-55-66', type: 'ديناميكي', interface: 'Wi-Fi' },
-            { address: '192.168.1.6', mac: 'AA-BB-CC-DD-EE-FF', type: 'ثابت', interface: 'Ethernet' },
-            { address: '192.168.1.7', mac: '12-34-56-78-9A-BC', type: 'ديناميكي', interface: 'Wi-Fi' },
-            { address: '192.168.1.8', mac: 'DE-AD-BE-EF-00-11', type: 'ديناميكي', interface: 'Ethernet' },
-            { address: '192.168.1.9', mac: 'AB-CD-EF-12-34-56', type: 'ثابت', interface: 'Wi-Fi' },
-            { address: '192.168.1.10', mac: '66-55-44-33-22-11', type: 'ديناميكي', interface: 'Ethernet' }
+            { address: '192.168.8.1', mac: '00-1A-2B-3C-4D-5E', type: 'ديناميكي', interface: 'Wi-Fi' },
+            { address: '192.168.8.2', mac: 'A0-B1-C2-D3-E4-F5', type: 'ديناميكي', interface: 'Ethernet' },
+            { address: '192.168.8.3', mac: '1A-2B-3C-4D-5E-6F', type: 'ثابت', interface: 'Wi-Fi' },
+            { address: '192.168.8.4', mac: 'FE-DC-BA-98-76-54', type: 'ديناميكي', interface: 'Ethernet' },
+            { address: '192.168.8.5', mac: '11-22-33-44-55-66', type: 'ديناميكي', interface: 'Wi-Fi' },
+            { address: '192.168.8.6', mac: 'AA-BB-CC-DD-EE-FF', type: 'ثابت', interface: 'Ethernet' },
+            { address: '192.168.8.7', mac: '12-34-56-78-9A-BC', type: 'ديناميكي', interface: 'Wi-Fi' },
+            { address: '192.168.8.8', mac: 'DE-AD-BE-EF-00-11', type: 'ديناميكي', interface: 'Ethernet' },
+            { address: '192.168.8.9', mac: 'AB-CD-EF-12-34-56', type: 'ثابت', interface: 'Wi-Fi' },
+            { address: '192.168.8.10', mac: '66-55-44-33-22-11', type: 'ديناميكي', interface: 'Ethernet' }
         ];
 
         document.addEventListener('DOMContentLoaded', function() {
