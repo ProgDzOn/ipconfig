@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>أداة فحص الشبكات - Netstat و ARP</title>
+    <title>أداة فحص ARP المتقدمة</title>
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -14,6 +14,8 @@
             --success-color: #2ecc71;
             --warning-color: #f39c12;
             --arp-color: #9b59b6;
+            --terminal-bg: #1e272e;
+            --terminal-text: #00ff00;
         }
         
         * {
@@ -24,94 +26,100 @@
         }
         
         body {
-            background-color: #f5f7fa;
-            color: #333;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
             line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
         }
         
         .container {
             width: 95%;
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
         }
         
         header {
-            background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
-            color: white;
-            padding: 1.5rem;
-            border-radius: 10px 10px 0 0;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
         }
         
         h1 {
-            text-align: center;
+            font-size: 2.5rem;
             margin-bottom: 10px;
-            font-size: 2rem;
+            color: var(--light-color);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
         
         .description {
-            text-align: center;
-            font-size: 1rem;
+            font-size: 1.1rem;
             opacity: 0.9;
-            margin-bottom: 15px;
+            max-width: 800px;
+            margin: 0 auto;
         }
         
-        .tabs {
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary-color);
+            color: var(--light-color);
             display: flex;
-            background-color: var(--light-color);
-            border-radius: 5px;
-            overflow: hidden;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .scan-section {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
             margin-bottom: 20px;
         }
         
-        .tab {
-            padding: 12px 20px;
-            cursor: pointer;
+        .ip-input {
             flex: 1;
-            text-align: center;
-            font-weight: bold;
-            transition: all 0.3s ease;
+            min-width: 250px;
         }
         
-        .tab.active {
-            background-color: var(--secondary-color);
-            color: white;
-        }
-        
-        .tab:not(.active):hover {
-            background-color: #d6dbdf;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
+        .ip-input label {
             display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
         }
         
-        .controls {
-            background-color: white;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
+        .ip-input input {
+            width: 100%;
+            padding: 12px 15px;
+            border: none;
             border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            margin-bottom: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+            font-size: 1rem;
         }
         
         .btn {
-            padding: 8px 16px;
+            padding: 12px 25px;
             border: none;
-            border-radius: 4px;
+            border-radius: 5px;
             cursor: pointer;
             font-weight: 500;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
         }
         
         .btn-primary {
@@ -121,6 +129,7 @@
         
         .btn-primary:hover {
             background-color: #2980b9;
+            transform: translateY(-2px);
         }
         
         .btn-danger {
@@ -130,6 +139,7 @@
         
         .btn-danger:hover {
             background-color: #c0392b;
+            transform: translateY(-2px);
         }
         
         .btn-arp {
@@ -139,135 +149,111 @@
         
         .btn-arp:hover {
             background-color: #8e44ad;
+            transform: translateY(-2px);
         }
         
-        .filter-options {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+        .results {
+            margin-top: 30px;
         }
         
-        select, input {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            min-width: 120px;
+        .device-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
         }
         
-        .stats {
-            background-color: var(--light-color);
-            padding: 12px 15px;
-            display: flex;
-            justify-content: space-between;
-            border-radius: 5px;
+        .device-card {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .device-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .device-ip {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+        
+        .device-mac {
+            font-family: monospace;
+            font-size: 1.1rem;
             margin-bottom: 15px;
+        }
+        
+        .device-type {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
             font-size: 0.9rem;
         }
         
-        .connections-table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: white;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            border-radius: 5px;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-        
-        .connections-table th {
-            background-color: var(--dark-color);
-            color: white;
-            padding: 12px 15px;
-            text-align: right;
-            cursor: pointer;
-        }
-        
-        .connections-table th:hover {
-            background-color: #2c3e50;
-        }
-        
-        .connections-table td {
-            padding: 10px 15px;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        .connections-table tr:nth-child(even) {
-            background-color: #f8f9fa;
-        }
-        
-        .connections-table tr:hover {
-            background-color: #e8f4fc;
-        }
-        
-        .status {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            text-align: center;
-            min-width: 80px;
-        }
-        
-        .established {
-            background-color: var(--success-color);
-            color: white;
-        }
-        
-        .listening {
-            background-color: var(--secondary-color);
-            color: white;
-        }
-        
-        .time-wait {
-            background-color: var(--warning-color);
-            color: white;
-        }
-        
-        .closed {
-            background-color: #95a5a6;
-            color: white;
-        }
-        
         .dynamic {
-            background-color: var(--arp-color);
-            color: white;
+            background-color: var(--success-color);
         }
         
         .static {
-            background-color: var(--primary-color);
-            color: white;
+            background-color: var(--warning-color);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--secondary-color);
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            background: rgba(231, 76, 60, 0.2);
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .info {
+            background: rgba(52, 152, 219, 0.2);
+            border-left: 4px solid var(--secondary-color);
         }
         
         .footer {
             text-align: center;
-            margin-top: 30px;
-            padding: 15px;
-            font-size: 0.8rem;
-            color: #7f8c8d;
-            border-top: 1px solid #ddd;
+            margin-top: 40px;
+            padding: 20px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
         }
         
         @media (max-width: 768px) {
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .filter-options {
+            .scan-section {
                 flex-direction: column;
             }
             
-            .connections-table {
-                font-size: 0.8rem;
+            h1 {
+                font-size: 2rem;
             }
             
-            .connections-table th, 
-            .connections-table td {
-                padding: 8px 10px;
-            }
-            
-            .tabs {
-                flex-direction: column;
+            .description {
+                font-size: 1rem;
             }
         }
     </style>
@@ -275,448 +261,174 @@
 <body>
     <div class="container">
         <header>
-            <h1>أداة فحص الشبكات المتقدمة</h1>
-            <p class="description">دمج بين وظائف netstat -an و arp -a في واجهة واحدة</p>
+            <h1><i class="fas fa-network-wired"></i> أداة فحص ARP المتقدمة</h1>
+            <p class="description">اكتشاف الأجهزة على الشبكة باستخدام محاكاة ARP</p>
         </header>
         
-        <div class="tabs">
-            <div class="tab active" data-tab="netstat">Netstat - اتصالات الشبكة</div>
-            <div class="tab" data-tab="arp">ARP - جدول العناوين</div>
-        </div>
-        
-        <!-- Netstat Tab Content -->
-        <div class="tab-content active" id="netstatContent">
-            <div class="controls">
-                <div class="filter-options">
-                    <select id="protocolFilter">
-                        <option value="all">جميع البروتوكولات</option>
-                        <option value="tcp">TCP</option>
-                        <option value="udp">UDP</option>
-                    </select>
-                    
-                    <select id="statusFilter">
-                        <option value="all">جميع الحالات</option>
-                        <option value="established">ESTABLISHED</option>
-                        <option value="listening">LISTENING</option>
-                        <option value="time_wait">TIME_WAIT</option>
-                        <option value="closed">CLOSED</option>
-                    </select>
-                    
-                    <input type="text" id="searchInput" placeholder="بحث في الاتصالات...">
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-info-circle"></i> معلومات الشبكة الحالية</h2>
+            <div id="networkInfo" class="alert info">
+                جاري تحميل معلومات الشبكة...
+            </div>
+            
+            <div class="scan-section">
+                <div class="ip-input">
+                    <label for="ipRange">نطاق IP للفحص (مثال: 192.168.1.0/24)</label>
+                    <input type="text" id="ipRange" value="192.168.8.0/24" placeholder="أدخل نطاق IP للفحص">
                 </div>
                 
-                <div class="actions">
-                    <button id="refreshNetstatBtn" class="btn btn-primary">تحديث Netstat</button>
-                    <button id="clearNetstatBtn" class="btn btn-danger">مسح السجلات</button>
+                <div style="display: flex; align-items: flex-end;">
+                    <button id="scanBtn" class="btn btn-arp">
+                        <i class="fas fa-search"></i> بدء الفحص
+                    </button>
                 </div>
             </div>
             
-            <div class="stats">
-                <div id="totalConnections">إجمالي الاتصالات: <span>0</span></div>
-                <div id="lastNetstatUpdate">آخر تحديث: <span>--</span></div>
-            </div>
-            
-            <div class="table-container">
-                <table class="connections-table">
-                    <thead>
-                        <tr>
-                            <th data-sort="protocol">البروتوكول ▼</th>
-                            <th data-sort="local">العنوان المحلي ▼</th>
-                            <th data-sort="foreign">العنوان الخارجي ▼</th>
-                            <th data-sort="status">الحالة ▼</th>
-                            <th data-sort="pid">PID ▼</th>
-                        </tr>
-                    </thead>
-                    <tbody id="netstatBody">
-                        <!-- سيتم ملء هذا القسم عبر JavaScript -->
-                    </tbody>
-                </table>
+            <div class="alert">
+                <strong>ملاحظة:</strong> هذا الفحص هو محاكاة. في بيئة حقيقية، ستحتاج إلى استخدام أدوات الطرف الثالث أو تطبيقات خاصة للوصول إلى بيانات ARP الفعلية.
             </div>
         </div>
         
-        <!-- ARP Tab Content -->
-        <div class="tab-content" id="arpContent">
-            <div class="controls">
-                <div class="filter-options">
-                    <select id="typeFilter">
-                        <option value="all">جميع الأنواع</option>
-                        <option value="dynamic">ديناميكي</option>
-                        <option value="static">ثابت</option>
-                    </select>
-                    
-                    <input type="text" id="searchArpInput" placeholder="بحث في جدول ARP...">
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-list"></i> نتائج الفحص</h2>
+            <div id="resultsContainer">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>الرجاء الانتظار، جاري فحص الشبكة...</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-cogs"></i> الخيارات المتقدمة</h2>
+            <p>لتنفيذ فحص ARP حقيقي، يمكنك استخدام أحد هذه الخيارات:</p>
+            
+            <div class="device-list">
+                <div class="device-card">
+                    <h3>أدوات سطر الأوامر</h3>
+                    <p>استخدم الأمر <code>arp -a</code> في CMD أو Terminal للحصول على جدول ARP الفعلي.</p>
                 </div>
                 
-                <div class="actions">
-                    <button id="refreshArpBtn" class="btn btn-arp">تحديث ARP</button>
-                    <button id="clearArpBtn" class="btn btn-danger">مسح السجلات</button>
+                <div class="device-card">
+                    <h3>تطبيقات الطرف الثالث</h3>
+                    <p>تطبيقات مثل Advanced IP Scanner أو Angry IP Scanner توفر فحص شبكة متقدم.</p>
                 </div>
-            </div>
-            
-            <div class="stats">
-                <div id="totalArpEntries">إجمالي المدخلات: <span>0</span></div>
-                <div id="lastArpUpdate">آخر تحديث: <span>--</span></div>
-            </div>
-            
-            <div class="table-container">
-                <table class="connections-table">
-                    <thead>
-                        <tr>
-                            <th data-sort="address">عنوان IP ▼</th>
-                            <th data-sort="mac">عنوان MAC ▼</th>
-                            <th data-sort="type">النوع ▼</th>
-                            <th data-sort="interface">واجهة الشبكة ▼</th>
-                        </tr>
-                    </thead>
-                    <tbody id="arpBody">
-                        <!-- سيتم ملء هذا القسم عبر JavaScript -->
-                    </tbody>
-                </table>
+                
+                <div class="device-card">
+                    <h3>أدوات المطورين</h3>
+                    <p>يمكن للمطورين استخدام مكتبات مثل Node.js مع حزم مثل <code>node-arp</code> لإنشاء أدوات ARP.</p>
+                </div>
             </div>
         </div>
         
         <div class="footer">
-            <p>تم التطوير باستخدام HTML و CSS و JavaScript - لأغراض تعليمية فقط</p>
-            <p>Note: This is a simulation. In a real environment, you would need server-side code to access network data.</p>
+            <p>تم التطوير باستخدام HTML و CSS و JavaScript - محاكاة لفحص ARP</p>
+            <p>Note: For real ARP scanning, you need server-side applications or specialized tools.</p>
         </div>
     </div>
 
     <script>
-        // بيانات نموذجية لمحاكاة نتائج netstat -an
-        const sampleNetstatData = [
-            { protocol: 'TCP', local: '192.168.8.5:54321', foreign: '93.184.216.34:443', status: 'ESTABLISHED', pid: 4521 },
-            { protocol: 'TCP', local: '192.168.8.5:51234', foreign: '172.217.18.206:80', status: 'TIME_WAIT', pid: 3784 },
-            { protocol: 'TCP', local: '0.0.0.0:135', foreign: '0.0.0.0:0', status: 'LISTENING', pid: 872 },
-            { protocol: 'TCP', local: '192.168.8.5:51235', foreign: '52.114.128.66:443', status: 'ESTABLISHED', pid: 6543 },
-            { protocol: 'UDP', local: '192.168.8.5:5353', foreign: '0.0.0.0:0', status: 'LISTENING', pid: 1234 },
-            { protocol: 'TCP', local: '192.168.8.5:54322', foreign: '104.16.249.249:443', status: 'CLOSING', pid: 5432 },
-            { protocol: 'TCP', local: '127.0.0.1:49672', foreign: '127.0.0.1:49673', status: 'ESTABLISHED', pid: 2345 },
-            { protocol: 'UDP', local: '192.168.8.5:1900', foreign: '239.255.255.250:1900', status: 'LISTENING', pid: 1900 },
-            { protocol: 'TCP', local: '192.168.8.5:51236', foreign: '34.237.58.125:443', status: 'ESTABLISHED', pid: 7654 },
-            { protocol: 'TCP', local: '192.168.8.5:51237', foreign: '13.107.42.14:443', status: 'TIME_WAIT', pid: 4321 }
-        ];
-
-        // بيانات نموذجية لمحاكاة نتائج arp -a
-        const sampleArpData = [
-            { address: '192.168.8.1', mac: '00-1A-2B-3C-4D-5E', type: 'ديناميكي', interface: 'Wi-Fi' },
-            { address: '192.168.8.2', mac: 'A0-B1-C2-D3-E4-F5', type: 'ديناميكي', interface: 'Ethernet' },
-            { address: '192.168.8.3', mac: '1A-2B-3C-4D-5E-6F', type: 'ثابت', interface: 'Wi-Fi' },
-            { address: '192.168.8.4', mac: 'FE-DC-BA-98-76-54', type: 'ديناميكي', interface: 'Ethernet' },
-            { address: '192.168.8.5', mac: '11-22-33-44-55-66', type: 'ديناميكي', interface: 'Wi-Fi' },
-            { address: '192.168.8.6', mac: 'AA-BB-CC-DD-EE-FF', type: 'ثابت', interface: 'Ethernet' },
-            { address: '192.168.8.7', mac: '12-34-56-78-9A-BC', type: 'ديناميكي', interface: 'Wi-Fi' },
-            { address: '192.168.8.8', mac: 'DE-AD-BE-EF-00-11', type: 'ديناميكي', interface: 'Ethernet' },
-            { address: '192.168.8.9', mac: 'AB-CD-EF-12-34-56', type: 'ثابت', interface: 'Wi-Fi' },
-            { address: '192.168.8.10', mac: '66-55-44-33-22-11', type: 'ديناميكي', interface: 'Ethernet' }
-        ];
-
         document.addEventListener('DOMContentLoaded', function() {
-            // عناصر واجهة Netstat
-            const netstatBody = document.getElementById('netstatBody');
-            const refreshNetstatBtn = document.getElementById('refreshNetstatBtn');
-            const clearNetstatBtn = document.getElementById('clearNetstatBtn');
-            const protocolFilter = document.getElementById('protocolFilter');
-            const statusFilter = document.getElementById('statusFilter');
-            const searchInput = document.getElementById('searchInput');
-            const totalConnectionsSpan = document.querySelector('#totalConnections span');
-            const lastNetstatUpdateSpan = document.querySelector('#lastNetstatUpdate span');
-            const netstatTableHeaders = document.querySelectorAll('#netstatContent th');
+            const scanBtn = document.getElementById('scanBtn');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const networkInfo = document.getElementById('networkInfo');
+            const ipRangeInput = document.getElementById('ipRange');
             
-            // عناصر واجهة ARP
-            const arpBody = document.getElementById('arpBody');
-            const refreshArpBtn = document.getElementById('refreshArpBtn');
-            const clearArpBtn = document.getElementById('clearArpBtn');
-            const typeFilter = document.getElementById('typeFilter');
-            const searchArpInput = document.getElementById('searchArpInput');
-            const totalArpEntriesSpan = document.querySelector('#totalArpEntries span');
-            const lastArpUpdateSpan = document.querySelector('#lastArpUpdate span');
-            const arpTableHeaders = document.querySelectorAll('#arpContent th');
-            
-            // عناصر التبويب
-            const tabs = document.querySelectorAll('.tab');
-            const tabContents = document.querySelectorAll('.tab-content');
-            
-            let netstatData = [];
-            let filteredNetstatData = [];
-            let arpData = [];
-            let filteredArpData = [];
-            
-            // تهيئة البيانات
-            function initData() {
-                netstatData = [...sampleNetstatData];
-                filteredNetstatData = [...netstatData];
-                updateNetstatTable();
-                updateNetstatStats();
+            // محاكاة بيانات ARP بناءً على نطاق IP المحدد
+            function simulateARPscan(ipRange) {
+                resultsContainer.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>جاري فحص الشبكة ${ipRange}، الرجاء الانتظار...</p>
+                    </div>
+                `;
                 
-                arpData = [...sampleArpData];
-                filteredArpData = [...arpData];
-                updateArpTable();
-                updateArpStats();
-            }
-            
-            // تحديث جدول Netstat
-            function updateNetstatTable() {
-                netstatBody.innerHTML = '';
-                
-                if (filteredNetstatData.length === 0) {
-                    netstatBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">لا توجد اتصالات لعرضها</td></tr>';
-                    return;
-                }
-                
-                filteredNetstatData.forEach(conn => {
-                    const row = document.createElement('tr');
+                // محاكاة وقت الفحص
+                setTimeout(() => {
+                    const baseIP = ipRange.split('/')[0].split('.').slice(0, 3).join('.');
+                    const deviceCount = Math.floor(Math.random() * 15) + 5; // بين 5 و20 جهاز
                     
-                    // تحديد فئة الحالة
-                    let statusClass = '';
-                    if (conn.status === 'ESTABLISHED') statusClass = 'established';
-                    else if (conn.status === 'LISTENING') statusClass = 'listening';
-                    else if (conn.status === 'TIME_WAIT') statusClass = 'time-wait';
-                    else if (conn.status === 'CLOSING') statusClass = 'closed';
-                    else statusClass = 'closed';
+                    let devicesHTML = '';
                     
-                    row.innerHTML = `
-                        <td>${conn.protocol}</td>
-                        <td>${conn.local}</td>
-                        <td>${conn.foreign}</td>
-                        <td><span class="status ${statusClass}">${conn.status}</span></td>
-                        <td>${conn.pid}</td>
+                    // إضافة البوابة الافتراضية
+                    devicesHTML += `
+                        <div class="device-card">
+                            <div class="device-ip">${baseIP}.1</div>
+                            <div class="device-mac">fc:61:79:15:51:f4</div>
+                            <div class="device-type dynamic">بوابة افتراضية</div>
+                        </div>
                     `;
                     
-                    netstatBody.appendChild(row);
-                });
-            }
-            
-            // تحديث جدول ARP
-            function updateArpTable() {
-                arpBody.innerHTML = '';
-                
-                if (filteredArpData.length === 0) {
-                    arpBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">لا توجد مدخلات ARP لعرضها</td></tr>';
-                    return;
-                }
-                
-                filteredArpData.forEach(entry => {
-                    const row = document.createElement('tr');
+                    // إضافة أجهزة عشوائية
+                    for (let i = 2; i < deviceCount; i++) {
+                        const isDynamic = Math.random() > 0.3; // 70% ديناميكي
+                        const type = isDynamic ? 'dynamic' : 'static';
+                        const typeText = isDynamic ? 'ديناميكي' : 'ثابت';
+                        
+                        // إنشاء عنوان MAC عشوائي
+                        const mac = Array.from({length: 6}, () => 
+                            Math.floor(Math.random() * 256).toString(16).padStart(2, '0')
+                        ).join(':');
+                        
+                        devicesHTML += `
+                            <div class="device-card">
+                                <div class="device-ip">${baseIP}.${100 + i}</div>
+                                <div class="device-mac">${mac}</div>
+                                <div class="device-type ${type}">${typeText}</div>
+                            </div>
+                        `;
+                    }
                     
-                    // تحديد فئة النوع
-                    let typeClass = entry.type === 'ديناميكي' ? 'dynamic' : 'static';
-                    
-                    row.innerHTML = `
-                        <td>${entry.address}</td>
-                        <td>${entry.mac}</td>
-                        <td><span class="status ${typeClass}">${entry.type}</span></td>
-                        <td>${entry.interface}</td>
+                    resultsContainer.innerHTML = `
+                        <h3>تم العثور على ${deviceCount} جهاز في الشبكة</h3>
+                        <div class="device-list">
+                            ${devicesHTML}
+                        </div>
                     `;
-                    
-                    arpBody.appendChild(row);
+                }, 3000);
+            }
+            
+            // الحصول على عنوان IP الخاص بالمستخدم (محاكاة)
+            function getClientIP() {
+                return new Promise((resolve) => {
+                    // في الواقع، يمكن استخدام WebRTC للحصول على IP LOCAL لكنه ليس دائمًا يعمل
+                    // هذه محاكاة فقط
+                    const fakeIP = "192.168." + Math.floor(Math.random() * 255) + "." + Math.floor(Math.random() * 255);
+                    resolve(fakeIP);
                 });
             }
             
-            // تحديث إحصائيات Netstat
-            function updateNetstatStats() {
-                totalConnectionsSpan.textContent = filteredNetstatData.length;
-                lastNetstatUpdateSpan.textContent = new Date().toLocaleTimeString();
-            }
-            
-            // تحديث إحصائيات ARP
-            function updateArpStats() {
-                totalArpEntriesSpan.textContent = filteredArpData.length;
-                lastArpUpdateSpan.textContent = new Date().toLocaleTimeString();
-            }
-            
-            // تطبيق فلاتر Netstat
-            function applyNetstatFilters() {
-                const protocolValue = protocolFilter.value;
-                const statusValue = statusFilter.value;
-                const searchValue = searchInput.value.toLowerCase();
-                
-                filteredNetstatData = netstatData.filter(conn => {
-                    let matchesProtocol = true;
-                    let matchesStatus = true;
-                    let matchesSearch = true;
-                    
-                    if (protocolValue !== 'all') {
-                        matchesProtocol = conn.protocol.toLowerCase() === protocolValue;
-                    }
-                    
-                    if (statusValue !== 'all') {
-                        matchesStatus = conn.status.toLowerCase() === statusValue;
-                    }
-                    
-                    if (searchValue) {
-                        matchesSearch = 
-                            conn.protocol.toLowerCase().includes(searchValue) ||
-                            conn.local.toLowerCase().includes(searchValue) ||
-                            conn.foreign.toLowerCase().includes(searchValue) ||
-                            conn.status.toLowerCase().includes(searchValue) ||
-                            conn.pid.toString().includes(searchValue);
-                    }
-                    
-                    return matchesProtocol && matchesStatus && matchesSearch;
-                });
-                
-                updateNetstatTable();
-                updateNetstatStats();
-            }
-            
-            // تطبيق فلاتر ARP
-            function applyArpFilters() {
-                const typeValue = typeFilter.value;
-                const searchValue = searchArpInput.value.toLowerCase();
-                
-                filteredArpData = arpData.filter(entry => {
-                    let matchesType = true;
-                    let matchesSearch = true;
-                    
-                    if (typeValue !== 'all') {
-                        const typeEnglish = typeValue === 'dynamic' ? 'ديناميكي' : 'ثابت';
-                        matchesType = entry.type === typeEnglish;
-                    }
-                    
-                    if (searchValue) {
-                        matchesSearch = 
-                            entry.address.toLowerCase().includes(searchValue) ||
-                            entry.mac.toLowerCase().includes(searchValue) ||
-                            entry.type.toLowerCase().includes(searchValue) ||
-                            entry.interface.toLowerCase().includes(searchValue);
-                    }
-                    
-                    return matchesType && matchesSearch;
-                });
-                
-                updateArpTable();
-                updateArpStats();
-            }
-            
-            // فرز بيانات Netstat
-            function sortNetstatData(sortKey, direction) {
-                filteredNetstatData.sort((a, b) => {
-                    let valueA = a[sortKey];
-                    let valueB = b[sortKey];
-                    
-                    if (typeof valueA === 'string') {
-                        valueA = valueA.toLowerCase();
-                        valueB = valueB.toLowerCase();
-                    }
-                    
-                    if (valueA < valueB) return direction === 'asc' ? -1 : 1;
-                    if (valueA > valueB) return direction === 'asc' ? 1 : -1;
-                    return 0;
-                });
-                
-                updateNetstatTable();
-            }
-            
-            // فرز بيانات ARP
-            function sortArpData(sortKey, direction) {
-                filteredArpData.sort((a, b) => {
-                    let valueA = a[sortKey];
-                    let valueB = b[sortKey];
-                    
-                    if (typeof valueA === 'string') {
-                        valueA = valueA.toLowerCase();
-                        valueB = valueB.toLowerCase();
-                    }
-                    
-                    if (valueA < valueB) return direction === 'asc' ? -1 : 1;
-                    if (valueA > valueB) return direction === 'asc' ? 1 : -1;
-                    return 0;
-                });
-                
-                updateArpTable();
-            }
-            
-            // إضافة مستمعي الأحداث للتبويب
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const tabId = this.dataset.tab;
-                    
-                    // إزالة النشاط من جميع الألسنة والمحتويات
-                    tabs.forEach(t => t.classList.remove('active'));
-                    tabContents.forEach(c => c.classList.remove('active'));
-                    
-                    // إضافة النشاط للسان والمحتوى المحدد
-                    this.classList.add('active');
-                    document.getElementById(`${tabId}Content`).classList.add('active');
-                });
+            // عند النقر على زر الفحص
+            scanBtn.addEventListener('click', function() {
+                const ipRange = ipRangeInput.value;
+                if (ipRange) {
+                    simulateARPscan(ipRange);
+                } else {
+                    alert("الرجاء إدخال نطاق IP صحيح");
+                }
             });
             
-            // إضافة مستمعي الأحداث لـ Netstat
-            refreshNetstatBtn.addEventListener('click', function() {
-                netstatData = [...sampleNetstatData];
-                applyNetstatFilters();
+            // عند تحميل الصفحة، عرض IP افتراضي
+            getClientIP().then(ip => {
+                const baseIP = ip.split('.').slice(0, 3).join('.');
+                ipRangeInput.value = `${baseIP}.0/24`;
+                networkInfo.innerHTML = `
+                    <strong>العنوان الحالي:</strong> ${ip}<br>
+                    <strong>نطاق الشبكة:</strong> ${baseIP}.0/24
+                `;
             });
             
-            clearNetstatBtn.addEventListener('click', function() {
-                netstatData = [];
-                filteredNetstatData = [];
-                updateNetstatTable();
-                updateNetstatStats();
+            // إضافة تأثير عند النقر على الأزرار
+            scanBtn.addEventListener('mousedown', function() {
+                this.style.transform = 'scale(0.95)';
             });
             
-            protocolFilter.addEventListener('change', applyNetstatFilters);
-            statusFilter.addEventListener('change', applyNetstatFilters);
-            searchInput.addEventListener('input', applyNetstatFilters);
-            
-            netstatTableHeaders.forEach(header => {
-                header.addEventListener('click', function() {
-                    const sortKey = this.dataset.sort;
-                    const currentDirection = this.getAttribute('data-direction') || 'asc';
-                    const newDirection = currentDirection === 'asc' ? 'desc' : 'asc';
-                    
-                    // إعادة تعليمات الاتجاه لجميع الرؤوس
-                    netstatTableHeaders.forEach(h => {
-                        h.innerHTML = h.innerHTML.replace(' ▼', '').replace(' ▲', '');
-                        h.removeAttribute('data-direction');
-                    });
-                    
-                    // تعيين الاتجاه الجديد للرأس الحالي
-                    this.setAttribute('data-direction', newDirection);
-                    this.innerHTML = this.innerHTML + (newDirection === 'asc' ? ' ▲' : ' ▼');
-                    
-                    sortNetstatData(sortKey, newDirection);
-                });
+            scanBtn.addEventListener('mouseup', function() {
+                this.style.transform = '';
             });
-            
-            // إضافة مستمعي الأحداث لـ ARP
-            refreshArpBtn.addEventListener('click', function() {
-                arpData = [...sampleArpData];
-                applyArpFilters();
-            });
-            
-            clearArpBtn.addEventListener('click', function() {
-                arpData = [];
-                filteredArpData = [];
-                updateArpTable();
-                updateArpStats();
-            });
-            
-            typeFilter.addEventListener('change', applyArpFilters);
-            searchArpInput.addEventListener('input', applyArpFilters);
-            
-            arpTableHeaders.forEach(header => {
-                header.addEventListener('click', function() {
-                    const sortKey = this.dataset.sort;
-                    const currentDirection = this.getAttribute('data-direction') || 'asc';
-                    const newDirection = currentDirection === 'asc' ? 'desc' : 'asc';
-                    
-                    // إعادة تعليمات الاتجاه لجميع الرؤوس
-                    arpTableHeaders.forEach(h => {
-                        h.innerHTML = h.innerHTML.replace(' ▼', '').replace(' ▲', '');
-                        h.removeAttribute('data-direction');
-                    });
-                    
-                    // تعيين الاتجاه الجديد للرأس الحالي
-                    this.setAttribute('data-direction', newDirection);
-                    this.innerHTML = this.innerHTML + (newDirection === 'asc' ? ' ▲' : ' ▼');
-                    
-                    sortArpData(sortKey, newDirection);
-                });
-            });
-            
-            // تهيئة البيانات عند تحميل الصفحة
-            initData();
         });
     </script>
+    
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </body>
 </html>
