@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اكتشاف الأجهزة على الشبكة</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #333;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        .header {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .device-card {
+            transition: transform 0.3s;
+            border-left: 4px solid #0d6efd;
+        }
+        .device-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        .btn-scan {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f);
+            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
+            border-radius: 50px;
+            transition: all 0.3s;
+        }
+        .btn-scan:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        .ip-address {
+            font-family: monospace;
+            font-size: 1.2em;
+            color: #0d6efd;
+            font-weight: bold;
+        }
+        .device-icon {
+            font-size: 2.5rem;
+            color: #0d6efd;
+            margin-bottom: 15px;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f);
+            color: white;
+        }
+        .progress {
+            height: 10px;
+            border-radius: 5px;
+        }
+        .device-type {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 0.8rem;
+            background: #f8f9fa;
+            padding: 3px 10px;
+            border-radius: 15px;
+            color: #6c757d;
+        }
+        .network-map {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            height: 300px;
+            position: relative;
+            overflow: hidden;
+        }
+        .node {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: #0d6efd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .connection {
+            position: absolute;
+            background: #0d6efd;
+            height: 3px;
+            transform-origin: left center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="header text-center">
+            <h1 class="display-4"><i class="fas fa-network-wired me-2"></i>اكتشاف الأجهزة على الشبكة</h1>
+            <p class="lead">هذه الأداة تفحص الشبكة المحلية وتكتشف الأجهزة المتصلة بها</p>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-8 mx-auto">
+                <div class="card p-4 text-center">
+                    <h3><i class="fas fa-info-circle me-2"></i>كيفية الاستخدام</h3>
+                    <p class="mb-4">انقر على زر "بدء الفحص" لبدء عملية اكتشاف الأجهزة المتصلة بالشبكة المحلية. قد تستغرق العملية بضع دقائق.</p>
+                    <button id="scanBtn" class="btn btn-scan btn-lg">
+                        <i class="fas fa-search me-2"></i>بدء الفحص
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-4 mb-3">
+                <div class="card stats-card p-3 text-center">
+                    <i class="fas fa-desktop device-icon"></i>
+                    <h4>الأجهزة المكتشفة</h4>
+                    <h2 id="devicesCount">0</h2>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card stats-card p-3 text-center">
+                    <i class="fas fa-wifi device-icon"></i>
+                    <h4>نطاق الشبكة</h4>
+                    <h2 id="networkRange">192.168.1.0/24</h2>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card stats-card p-3 text-center">
+                    <i class="fas fa-clock device-icon"></i>
+                    <h4>حالة الفحص</h4>
+                    <h2 id="scanStatus">لم يبدأ</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card p-4 mb-4">
+                    <h3 class="mb-4"><i class="fas fa-list me-2"></i>الأجهزة المكتشفة</h3>
+                    <div id="devicesList">
+                        <p class="text-center text-muted">لم يتم اكتشاف أي أجهزة بعد. انقر فوق "بدء الفحص" لبدء المسح.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card p-4 mb-4">
+                    <h3 class="mb-4"><i class="fas fa-map me-2"></i>خريطة الشبكة</h3>
+                    <div class="network-map" id="networkMap">
+                        <p class="text-center text-muted">سيظهر هنا تمثيل مرئي للشبكة بعد المسح</p>
+                    </div>
+                </div>
+                
+                <div class="card p-4">
+                    <h3 class="mb-4"><i class="fas fa-chart-pie me-2"></i>إحصائيات</h3>
+                    <div>
+                        <p>أجهزة كمبيوتر <span class="float-end" id="pcsCount">0</span></p>
+                        <div class="progress mb-3">
+                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        
+                        <p>هواتف <span class="float-end" id="phonesCount">0</span></p>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        
+                        <p>أجهزة أخرى <span class="float-end" id="otherCount">0</span></p>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const scanBtn = document.getElementById('scanBtn');
+            const devicesList = document.getElementById('devicesList');
+            const devicesCount = document.getElementById('devicesCount');
+            const scanStatus = document.getElementById('scanStatus');
+            const networkMap = document.getElementById('networkMap');
+            const pcsCount = document.getElementById('pcsCount');
+            const phonesCount = document.getElementById('phonesCount');
+            const otherCount = document.getElementById('otherCount');
+            
+            // بيانات محاكاة للأجهزة (في تطبيق حقيقي، سيتم الحصول على هذه البيانات من خلال الفحص)
+            const sampleDevices = [
+                { ip: '192.168.1.1', name: 'Router', type: 'router', mac: '00:1A:2B:3C:4D:5E' },
+                { ip: '192.168.1.2', name: 'My PC', type: 'pc', mac: 'A0:B1:C2:D3:E4:F5' },
+                { ip: '192.168.1.5', name: 'Smartphone', type: 'phone', mac: 'F1:E2:D3:C4:B5:A6' },
+                { ip: '192.168.1.10', name: 'Laptop', type: 'pc', mac: '1A:2B:3C:4D:5E:6F' },
+                { ip: '192.168.1.15', name: 'Tablet', type: 'tablet', mac: 'AA:BB:CC:DD:EE:FF' },
+                { ip: '192.168.1.20', name: 'Smart TV', type: 'tv', mac: '12:34:56:78:90:AB' },
+                { ip: '192.168.1.25', name: 'Printer', type: 'printer', mac: 'CD:EF:AB:12:34:56' }
+            ];
+            
+            // دالة محاكاة للمسح
+            function simulateScan() {
+                scanBtn.disabled = true;
+                scanBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري الفحص...';
+                scanStatus.textContent = 'قيد التنفيذ';
+                
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 5;
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        completeScan();
+                    }
+                }, 200);
+            }
+            
+            // إكمال عملية المسح وعرض النتائج
+            function completeScan() {
+                devicesList.innerHTML = '';
+                sampleDevices.forEach(device => {
+                    const deviceCard = document.createElement('div');
+                    deviceCard.className = 'card device-card mb-3';
+                    deviceCard.innerHTML = `
+                        <div class="card-body">
+                            <span class="device-type">${getDeviceTypeName(device.type)}</span>
+                            <h5 class="card-title">${device.name}</h5>
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <i class="fas fa-network-wired me-2"></i>
+                                    <span class="ip-address">${device.ip}</span>
+                                </div>
+                                <div>
+                                    <small class="text-muted">${device.mac}</small>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    devicesList.appendChild(deviceCard);
+                });
+                
+                devicesCount.textContent = sampleDevices.length;
+                scanStatus.textContent = 'مكتمل';
+                
+                // تحديث الإحصائيات
+                pcsCount.textContent = sampleDevices.filter(d => d.type === 'pc').length;
+                phonesCount.textContent = sampleDevices.filter(d => d.type === 'phone').length;
+                otherCount.textContent = sampleDevices.length - 
+                    sampleDevices.filter(d => d.type === 'pc').length - 
+                    sampleDevices.filter(d => d.type === 'phone').length;
+                
+                // تحديث أشرطة التقدم
+                document.querySelectorAll('.progress-bar')[0].style.width = 
+                    (sampleDevices.filter(d => d.type === 'pc').length / sampleDevices.length * 100) + '%';
+                document.querySelectorAll('.progress-bar')[1].style.width = 
+                    (sampleDevices.filter(d => d.type === 'phone').length / sampleDevices.length * 100) + '%';
+                document.querySelectorAll('.progress-bar')[2].style.width = 
+                    (otherCount.textContent / sampleDevices.length * 100) + '%';
+                
+                // إنشاء خريطة الشبكة
+                renderNetworkMap();
+                
+                scanBtn.disabled = false;
+                scanBtn.innerHTML = '<i class="fas fa-sync-alt me-2"></i>إعادة الفحص';
+            }
+            
+            // عرض خريطة الشبكة
+            function renderNetworkMap() {
+                networkMap.innerHTML = '';
+                
+                // إضافة العقد
+                sampleDevices.forEach((device, index) => {
+                    const angle = (index / sampleDevices.length) * 2 * Math.PI;
+                    const radius = 100;
+                    const x = 150 + radius * Math.cos(angle);
+                    const y = 150 + radius * Math.sin(angle);
+                    
+                    const node = document.createElement('div');
+                    node.className = 'node';
+                    node.style.left = x + 'px';
+                    node.style.top = y + 'px';
+                    node.textContent = device.ip.split('.')[3];
+                    node.title = `${device.name} (${device.ip})`;
+                    networkMap.appendChild(node);
+                    
+                    // إضافة اتصال بالراوتر
+                    if (device.type !== 'router') {
+                        const router = sampleDevices.find(d => d.type === 'router');
+                        if (router) {
+                            const routerIndex = sampleDevices.indexOf(router);
+                            const routerAngle = (routerIndex / sampleDevices.length) * 2 * Math.PI;
+                            const routerX = 150 + radius * Math.cos(routerAngle);
+                            const routerY = 150 + radius * Math.sin(routerAngle);
+                            
+                            const length = Math.sqrt(Math.pow(x - routerX, 2) + Math.pow(y - routerY, 2));
+                            const angleDeg = Math.atan2(y - routerY, x - routerX) * 180 / Math.PI;
+                            
+                            const connection = document.createElement('div');
+                            connection.className = 'connection';
+                            connection.style.width = length + 'px';
+                            connection.style.left = routerX + 25 + 'px';
+                            connection.style.top = routerY + 25 + 'px';
+                            connection.style.transform = `rotate(${angleDeg}deg)`;
+                            networkMap.appendChild(connection);
+                        }
+                    }
+                });
+            }
+            
+            // الحصول على اسم نوع الجهاز بالعربية
+            function getDeviceTypeName(type) {
+                const typeNames = {
+                    'router': 'موجه',
+                    'pc': 'كمبيوتر',
+                    'phone': 'هاتف',
+                    'tablet': 'لوحي',
+                    'tv': 'تلفاز',
+                    'printer': 'طابعة'
+                };
+                return typeNames[type] || 'جهاز';
+            }
+            
+            // إضافة مستمع الحدث للزر
+            scanBtn.addEventListener('click', simulateScan);
+            
+            // تهيئة أولية
+            devicesCount.textContent = '0';
+            scanStatus.textContent = 'لم يبدأ';
+        });
+    </script>
+</body>
+</html>
