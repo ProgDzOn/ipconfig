@@ -3,572 +3,439 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>أداة متقدمة لاكتشاف الأجهزة على الشبكة</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>فحص الشبكات المتصلة - Netstat</title>
     <style>
         :root {
-            --primary-color: #1a2a6c;
-            --secondary-color: #b21f1f;
-            --accent-color: #fdbb2d;
-            --light-bg: #f8f9fa;
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            background-color: #f5f7fa;
             color: #333;
-            min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding-bottom: 50px;
+            line-height: 1.6;
         }
         
-        .card {
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.95);
-            transition: transform 0.3s;
-            margin-bottom: 20px;
-            border: none;
+        .container {
+            width: 95%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
         }
         
-        .card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .header {
-            background: rgba(0, 0, 0, 0.7);
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
             color: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin: 30px 0;
+            padding: 1rem;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
             text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
         }
         
-        .ip-box {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            border-radius: 12px;
+        .description {
+            text-align: center;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .controls {
+            background-color: white;
             padding: 15px;
-            margin: 20px 0;
-            font-family: monospace;
-            font-size: 1.2rem;
-        }
-        
-        .btn-scan {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            border: none;
-            padding: 15px 35px;
-            font-size: 18px;
-            border-radius: 50px;
-            transition: all 0.3s;
-            margin: 20px 0;
-        }
-        
-        .btn-scan:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-        
-        .device-card {
-            border-left: 4px solid var(--primary-color);
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 10px;
-            background: var(--light-bg);
-        }
-        
-        .device-icon {
-            font-size: 2rem;
-            color: var(--primary-color);
-            margin-left: 15px;
-        }
-        
-        .ip-address {
-            font-family: monospace;
-            font-size: 1.1rem;
-            color: var(--primary-color);
-            font-weight: bold;
-        }
-        
-        .progress-bar {
-            border-radius: 10px;
-        }
-        
-        .stats-box {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        
-        .network-map {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            height: 300px;
-            position: relative;
-            overflow: hidden;
-            background-image: radial-gradient(circle, #e6e6e6 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
-        
-        .node {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            background: var(--primary-color);
-            border-radius: 50%;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
             color: white;
-            font-weight: bold;
-            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
-            animation: pulse 2s infinite;
-            z-index: 2;
         }
         
-        .connection {
-            position: absolute;
-            background: var(--primary-color);
-            height: 3px;
-            transform-origin: left center;
-            z-index: 1;
+        .btn-primary:hover {
+            background-color: #2980b9;
         }
         
-        .router-node {
-            background: var(--secondary-color);
-            width: 60px;
-            height: 60px;
+        .btn-danger {
+            background-color: var(--accent-color);
+            color: white;
         }
         
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        .btn-danger:hover {
+            background-color: #c0392b;
         }
         
-        .info-box {
-            background: var(--light-bg);
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-            border-right: 4px solid var(--accent-color);
+        .filter-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
         
-        h2, h3, h4 {
-            color: var(--primary-color);
+        select, input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
         
-        .badge {
-            font-weight: normal;
-            padding: 6px 12px;
+        .stats {
+            background-color: var(--light-color);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+        }
+        
+        .connections-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .connections-table th {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 12px 15px;
+            text-align: right;
+            cursor: pointer;
+        }
+        
+        .connections-table th:hover {
+            background-color: #2c3e50;
+        }
+        
+        .connections-table td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .connections-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .connections-table tr:hover {
+            background-color: #e8f4fc;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
             border-radius: 20px;
+            font-size: 0.8rem;
+            text-align: center;
+            min-width: 80px;
         }
         
-        .scan-options {
-            background: var(--light-bg);
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
+        .established {
+            background-color: var(--success-color);
+            color: white;
         }
         
-        .form-check-input:checked {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
+        .listening {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .time-wait {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .closed {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-options {
+                flex-direction: column;
+            }
+            
+            .connections-table {
+                font-size: 0.8rem;
+            }
+            
+            .connections-table th, 
+            .connections-table td {
+                padding: 8px 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container py-5">
-        <div class="header">
-            <h1 class="display-4"><i class="fas fa-network-wired me-2"></i>أداة متقدمة لاكتشاف الأجهزة على الشبكة</h1>
-            <p class="lead">أداة محسنة للكشف عن الأجهزة المخفية أو التي لا تظهر في المسح العادي</p>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card p-4">
-                    <h3><i class="fas fa-info-circle me-2"></i>معلومات الشبكة الحالية</h3>
-                    
-                    <div class="info-box">
-                        <h4><i class="fas fa-wifi me-2"></i>اتصال Wi-Fi</h4>
-                        <div class="d-flex justify-content-between align-items-center my-3">
-                            <div>عنوان IP الخاص بك:</div>
-                            <div class="ip-address">192.168.8.107</div>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center my-3">
-                            <div>البوابة الافتراضية:</div>
-                            <div class="ip-address">192.168.8.1</div>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center my-3">
-                            <div>قناع الشبكة الفرعية:</div>
-                            <div class="ip-address">255.255.255.0</div>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center my-3">
-                            <div>نطاق IPs للفحص:</div>
-                            <div class="ip-address">192.168.8.1 - 192.168.8.254</div>
-                        </div>
-                    </div>
-                    
-                    <div class="scan-options">
-                        <h4><i class="fas fa-cog me-2"></i>خيارات الفحص</h4>
-                        
-                        <div class="form-check form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" id="deepScan" checked>
-                            <label class="form-check-label" for="deepScan">فحص متعمق (أبطأ ولكن أدق)</label>
-                        </div>
-                        
-                        <div class="form-check form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" id="detectStealth">
-                            <label class="form-check-label" for="detectStealth">كشف الأجهزة المخفية</label>
-                        </div>
-                        
-                        <div class="form-check form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" id="osDetection">
-                            <label class="form-check-label" for="osDetection">كشف نظام التشغيل</label>
-                        </div>
-                        
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="portScan">
-                            <label class="form-check-label" for="portScan">فحص المنافذ المفتوحة</label>
-                        </div>
-                    </div>
-                    
-                    <div class="text-center">
-                        <button id="scanBtn" class="btn btn-scan btn-lg">
-                            <i class="fas fa-search me-2"></i>بدء فحص الشبكة المتقدم
-                        </button>
-                    </div>
-                    
-                    <div class="progress mt-3" style="height: 20px; display: none;" id="progressBar">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;">0%</div>
-                    </div>
-                </div>
+    <div class="container">
+        <header>
+            <h1>فحص الشبكات المتصلة - Netstat</h1>
+            <p class="description">أداة لفحص وإدارة الاتصالات الشبكية النشطة على جهازك</p>
+        </header>
+        
+        <div class="controls">
+            <div class="filter-options">
+                <select id="protocolFilter">
+                    <option value="all">جميع البروتوكولات</option>
+                    <option value="tcp">TCP</option>
+                    <option value="udp">UDP</option>
+                </select>
                 
-                <div class="card p-4 mt-4">
-                    <h3><i class="fas fa-chart-pie me-2"></i>إحصائيات الشبكة</h3>
-                    
-                    <div class="stats-box">
-                        <div class="row text-center">
-                            <div class="col-4">
-                                <i class="fas fa-desktop fa-2x mb-2"></i>
-                                <h4 id="pcsCount">0</h4>
-                                <p>أجهزة كمبيوتر</p>
-                            </div>
-                            <div class="col-4">
-                                <i class="fas fa-mobile-alt fa-2x mb-2"></i>
-                                <h4 id="phonesCount">0</h4>
-                                <p>هواتف</p>
-                            </div>
-                            <div class="col-4">
-                                <i class="fas fa-server fa-2x mb-2"></i>
-                                <h4 id="otherCount">0</h4>
-                                <p>أجهزة أخرى</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-3">
-                        <p>إجمالي الأجهزة <span class="float-end" id="totalDevices">0</span></p>
-                        <div class="progress mb-3" style="height: 10px;">
-                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
-                        </div>
-                        
-                        <p>الأجهزة المخفية <span class="float-end" id="hiddenDevices">0</span></p>
-                        <div class="progress" style="height: 10px;">
-                            <div class="progress-bar bg-warning" role="progressbar" style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
+                <select id="statusFilter">
+                    <option value="all">جميع الحالات</option>
+                    <option value="established">ESTABLISHED</option>
+                    <option value="listening">LISTENING</option>
+                    <option value="time_wait">TIME_WAIT</option>
+                    <option value="closed">CLOSED</option>
+                </select>
+                
+                <input type="text" id="searchInput" placeholder="بحث...">
             </div>
             
-            <div class="col-md-6">
-                <div class="card p-4">
-                    <h3><i class="fas fa-map me-2"></i>خريطة الشبكة</h3>
-                    <div class="network-map" id="networkMap">
-                        <p class="text-center text-muted position-absolute top-50 start-50 translate-middle">سيظهر هنا تمثيل مرئي للشبكة بعد المسح</p>
-                    </div>
-                </div>
-                
-                <div class="card p-4 mt-4">
-                    <h3><i class="fas fa-bolt me-2"></i>نصائح لاكتشاف الأجهزة المخفية</h3>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">1. تأكد من أن الجهاز متصل بالشبكة ويعمل</li>
-                        <li class="list-group-item">2. جرب إعادة تشغيل الموجه (Router)</li>
-                        <li class="list-group-item">3. تحقق من إعدادات الجدار الناري على الأجهزة</li>
-                        <li class="list-group-item">4. استخدم خيار "كشف الأجهزة المخفية" في هذه الأداة</li>
-                        <li class="list-group-item">5. جرب تغيير قناة Wi-Fi في إعدادات الموجه</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card p-4">
-                    <h3><i class="fas fa-list me-2"></i>الأجهزة المكتشفة على الشبكة <span class="badge bg-primary" id="devicesCountBadge">0</span></h3>
-                    <div id="devicesList">
-                        <p class="text-center text-muted py-4">لم يتم اكتشاف أي أجهزة بعد. انقر فوق "بدء فحص الشبكة المتقدم" لبدء المسح.</p>
-                    </div>
-                </div>
+            <div class="actions">
+                <button id="refreshBtn" class="btn btn-primary">تحديث البيانات</button>
+                <button id="clearBtn" class="btn btn-danger">مسح السجلات</button>
             </div>
         </div>
         
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card p-4">
-                    <h3><i class="fas fa-lightbulb me-2"></i>لماذا قد لا تظهر بعض الأجهزة؟</h3>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="info-box">
-                                <h4><i class="fas fa-shield-alt me-2"></i>إعدادات الجدار الناري</h4>
-                                <p>بعض الأجهزة قد تمنع الاستجابة لطلبات Ping أو المسح بسبب إعدادات الجدار الناري.</p>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="info-box">
-                                <h4><i class="fas fa-eye-slash me-2"></i>وضع التخفي</h4>
-                                <p>بعض الأجهزة تدعم وضع التخفي الذي يخفيها عن مسحات الشبكة العادية.</p>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="info-box">
-                                <h4><i class="fas fa-wifi-slash me-2"></i>مشاكل الاتصال</h4>
-                                <p>قد تكون هناك مشاكل في اتصال الجهاز بالشبكة أو أنه في وضع السكون.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="stats">
+            <div id="totalConnections">إجمالي الاتصالات: <span>0</span></div>
+            <div id="lastUpdate">آخر تحديث: <span>--</span></div>
+        </div>
+        
+        <div class="table-container">
+            <table class="connections-table">
+                <thead>
+                    <tr>
+                        <th data-sort="protocol">البروتوكول ▼</th>
+                        <th data-sort="local">العنوان المحلي ▼</th>
+                        <th data-sort="foreign">العنوان الخارجي ▼</th>
+                        <th data-sort="status">الحالة ▼</th>
+                        <th data-sort="pid">PID ▼</th>
+                    </tr>
+                </thead>
+                <tbody id="connectionsBody">
+                    <!-- سيتم ملء هذا القسم عبر JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="footer">
+            <p>تم التطوير باستخدام HTML و CSS و JavaScript - لأغراض تعليمية فقط</p>
         </div>
     </div>
 
     <script>
+        // بيانات نموذجية لمحاكاة نتائج netstat
+        const sampleConnections = [
+            { protocol: 'TCP', local: '192.168.1.5:54321', foreign: '93.184.216.34:443', status: 'ESTABLISHED', pid: 4521 },
+            { protocol: 'TCP', local: '192.168.1.5:51234', foreign: '172.217.18.206:80', status: 'TIME_WAIT', pid: 3784 },
+            { protocol: 'TCP', local: '0.0.0.0:135', foreign: '0.0.0.0:0', status: 'LISTENING', pid: 872 },
+            { protocol: 'TCP', local: '192.168.1.5:51235', foreign: '52.114.128.66:443', status: 'ESTABLISHED', pid: 6543 },
+            { protocol: 'UDP', local: '192.168.1.5:5353', foreign: '0.0.0.0:0', status: 'LISTENING', pid: 1234 },
+            { protocol: 'TCP', local: '192.168.1.5:54322', foreign: '104.16.249.249:443', status: 'CLOSING', pid: 5432 },
+            { protocol: 'TCP', local: '127.0.0.1:49672', foreign: '127.0.0.1:49673', status: 'ESTABLISHED', pid: 2345 },
+            { protocol: 'UDP', local: '192.168.1.5:1900', foreign: '239.255.255.250:1900', status: 'LISTENING', pid: 1900 },
+            { protocol: 'TCP', local: '192.168.1.5:51236', foreign: '34.237.58.125:443', status: 'ESTABLISHED', pid: 7654 },
+            { protocol: 'TCP', local: '192.168.1.5:51237', foreign: '13.107.42.14:443', status: 'TIME_WAIT', pid: 4321 }
+        ];
+
         document.addEventListener('DOMContentLoaded', function() {
-            const scanBtn = document.getElementById('scanBtn');
-            const devicesList = document.getElementById('devicesList');
-            const progressBar = document.getElementById('progressBar');
-            const networkMap = document.getElementById('networkMap');
-            const pcsCount = document.getElementById('pcsCount');
-            const phonesCount = document.getElementById('phonesCount');
-            const otherCount = document.getElementById('otherCount');
-            const totalDevices = document.getElementById('totalDevices');
-            const hiddenDevices = document.getElementById('hiddenDevices');
-            const devicesCountBadge = document.getElementById('devicesCountBadge');
-            const deepScan = document.getElementById('deepScan');
-            const detectStealth = document.getElementById('detectStealth');
-            const osDetection = document.getElementById('osDetection');
-            const portScan = document.getElementById('portScan');
+            const connectionsBody = document.getElementById('connectionsBody');
+            const refreshBtn = document.getElementById('refreshBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const protocolFilter = document.getElementById('protocolFilter');
+            const statusFilter = document.getElementById('statusFilter');
+            const searchInput = document.getElementById('searchInput');
+            const totalConnectionsSpan = document.querySelector('#totalConnections span');
+            const lastUpdateSpan = document.querySelector('#lastUpdate span');
+            const tableHeaders = document.querySelectorAll('th');
             
-            // بيانات محاكاة للأجهزة بناءً على شبكة 192.168.8.0/24
-            const sampleDevices = [
-                { ip: '192.168.8.1', name: 'Router', type: 'router', mac: '00:1A:2B:3C:4D:5E', vendor: 'TP-Link', os: 'RouterOS', hidden: false, ports: [80, 443, 22] },
-                { ip: '192.168.8.107', name: 'جهازك - My PC', type: 'pc', mac: 'A0:B1:C2:D3:E4:F5', vendor: 'Dell', os: 'Windows 11', hidden: false, ports: [80, 443, 135, 139, 445] },
-                { ip: '192.168.8.105', name: 'Smartphone', type: 'phone', mac: 'F1:E2:D3:C4:B5:A6', vendor: 'Samsung', os: 'Android 13', hidden: false, ports: [80, 443] },
-                { ip: '192.168.8.110', name: 'Laptop', type: 'pc', mac: '1A:2B:3C:4D:5E:6F', vendor: 'HP', os: 'Windows 10', hidden: false, ports: [80, 443, 135, 139, 445] },
-                { ip: '192.168.8.115', name: 'Tablet', type: 'tablet', mac: 'AA:BB:CC:DD:EE:FF', vendor: 'Apple', os: 'iPadOS 16', hidden: false, ports: [80, 443] },
-                { ip: '192.168.8.120', name: 'Smart TV', type: 'tv', mac: '12:34:56:78:90:AB', vendor: 'LG', os: 'WebOS', hidden: false, ports: [80, 443] },
-                { ip: '192.168.8.125', name: 'Printer', type: 'printer', mac: 'CD:EF:AB:12:34:56', vendor: 'Canon', os: 'Embedded OS', hidden: false, ports: [80, 443, 631] },
-                { ip: '192.168.8.130', name: 'NAS Server', type: 'server', mac: '11:22:33:44:55:66', vendor: 'Synology', os: 'DSM 7.x', hidden: false, ports: [80, 443, 5000, 5001] },
-                { ip: '192.168.8.150', name: 'جهاز مخفي', type: 'pc', mac: 'AA:BB:CC:11:22:33', vendor: 'Unknown', os: 'Linux', hidden: true, ports: [22, 80] },
-                { ip: '192.168.8.160', name: 'IoT Device', type: 'iot', mac: 'BB:CC:DD:44:55:66', vendor: 'TP-Link', os: 'Embedded Linux', hidden: true, ports: [80] }
-            ];
+            let connections = [];
+            let filteredConnections = [];
             
-            // دالة محاكاة للمسح
-            function simulateScan() {
-                scanBtn.disabled = true;
-                scanBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري فحص الشبكة...';
-                progressBar.style.display = 'block';
-                
-                // تفعيل خيارات المسح المحددة
-                const useDeepScan = deepScan.checked;
-                const useStealthDetection = detectStealth.checked;
-                const useOSDetection = osDetection.checked;
-                const usePortScan = portScan.checked;
-                
-                let progress = 0;
-                const interval = setInterval(() => {
-                    progress += 2;
-                    if (progress >= 100) {
-                        clearInterval(interval);
-                        completeScan(useStealthDetection);
-                    }
-                    document.querySelector('.progress-bar').style.width = progress + '%';
-                    document.querySelector('.progress-bar').textContent = progress + '%';
-                }, 100);
+            // تهيئة البيانات
+            function initData() {
+                connections = [...sampleConnections];
+                filteredConnections = [...connections];
+                updateConnectionsTable();
+                updateStats();
             }
             
-            // إكمال عملية المسح وعرض النتائج
-            function completeScan(stealthDetectionEnabled) {
-                devicesList.innerHTML = '';
+            // تحديث الجدول
+            function updateConnectionsTable() {
+                connectionsBody.innerHTML = '';
                 
-                let discoveredDevices = stealthDetectionEnabled ? 
-                    sampleDevices : 
-                    sampleDevices.filter(device => !device.hidden);
+                if (filteredConnections.length === 0) {
+                    connectionsBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">لا توجد اتصالات لعرضها</td></tr>';
+                    return;
+                }
                 
-                discoveredDevices.forEach(device => {
-                    const deviceCard = document.createElement('div');
-                    deviceCard.className = 'device-card';
+                filteredConnections.forEach(conn => {
+                    const row = document.createElement('tr');
                     
-                    const isCurrentDevice = device.ip === '192.168.8.107';
+                    // تحديد فئة الحالة
+                    let statusClass = '';
+                    if (conn.status === 'ESTABLISHED') statusClass = 'established';
+                    else if (conn.status === 'LISTENING') statusClass = 'listening';
+                    else if (conn.status === 'TIME_WAIT') statusClass = 'time-wait';
+                    else if (conn.status === 'CLOSING') statusClass = 'closed';
+                    else statusClass = 'closed';
                     
-                    deviceCard.innerHTML = `
-                        <div class="d-flex align-items-center">
-                            <div class="device-icon">
-                                <i class="${getDeviceIcon(device.type)}"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <h5 class="mb-1">${device.name} ${isCurrentDevice ? '<span class="badge bg-info">جهازك</span>' : ''} 
-                                ${device.hidden ? '<span class="badge bg-warning">مخفي</span>' : ''}</h5>
-                                <div class="d-flex justify-content-between">
-                                    <div>
-                                        <i class="fas fa-network-wired me-2"></i>
-                                        <span class="ip-address">${device.ip}</span>
-                                    </div>
-                                    <div>
-                                        <small class="text-muted">${device.mac}</small>
-                                    </div>
-                                </div>
-                                <div class="mt-2">
-                                    <span class="badge bg-secondary">${device.vendor}</span>
-                                    <span class="badge ${getDeviceBadgeClass(device.type)}">${getDeviceTypeName(device.type)}</span>
-                                    ${osDetection.checked ? `<span class="badge bg-info">${device.os}</span>` : ''}
-                                </div>
-                                ${portScan.checked ? `
-                                <div class="mt-2">
-                                    <small class="text-muted">المنافذ المفتوحة: ${device.ports.join(', ')}</small>
-                                </div>
-                                ` : ''}
-                            </div>
-                        </div>
+                    row.innerHTML = `
+                        <td>${conn.protocol}</td>
+                        <td>${conn.local}</td>
+                        <td>${conn.foreign}</td>
+                        <td><span class="status ${statusClass}">${conn.status}</span></td>
+                        <td>${conn.pid}</td>
                     `;
-                    devicesList.appendChild(deviceCard);
+                    
+                    connectionsBody.appendChild(row);
                 });
-                
-                // تحديث الإحصائيات
-                const pcs = discoveredDevices.filter(d => d.type === 'pc').length;
-                const phones = discoveredDevices.filter(d => d.type === 'phone').length;
-                const others = discoveredDevices.length - pcs - phones;
-                const hiddenCount = discoveredDevices.filter(d => d.hidden).length;
-                
-                pcsCount.textContent = pcs;
-                phonesCount.textContent = phones;
-                otherCount.textContent = others;
-                totalDevices.textContent = discoveredDevices.length;
-                hiddenDevices.textContent = hiddenCount;
-                devicesCountBadge.textContent = discoveredDevices.length;
-                
-                // تحديث أشرطة التقدم
-                document.querySelectorAll('.progress-bar')[1].style.width = '100%';
-                document.querySelectorAll('.progress-bar')[2].style.width = (hiddenCount / discoveredDevices.length * 100) + '%';
-                
-                // إنشاء خريطة الشبكة
-                renderNetworkMap(discoveredDevices);
-                
-                scanBtn.disabled = false;
-                scanBtn.innerHTML = '<i class="fas fa-sync-alt me-2"></i>إعادة الفحص';
             }
             
-            // عرض خريطة الشبكة
-            function renderNetworkMap(devices) {
-                networkMap.innerHTML = '';
+            // تحديث الإحصائيات
+            function updateStats() {
+                totalConnectionsSpan.textContent = filteredConnections.length;
+                lastUpdateSpan.textContent = new Date().toLocaleTimeString();
+            }
+            
+            // تطبيق الفلاتر
+            function applyFilters() {
+                const protocolValue = protocolFilter.value;
+                const statusValue = statusFilter.value;
+                const searchValue = searchInput.value.toLowerCase();
                 
-                // إضافة العقد
-                devices.forEach((device, index) => {
-                    const angle = (index / devices.length) * 2 * Math.PI;
-                    const radius = 100;
-                    const x = 150 + radius * Math.cos(angle);
-                    const y = 150 + radius * Math.sin(angle);
+                filteredConnections = connections.filter(conn => {
+                    let matchesProtocol = true;
+                    let matchesStatus = true;
+                    let matchesSearch = true;
                     
-                    const node = document.createElement('div');
-                    node.className = `node ${device.type === 'router' ? 'router-node' : ''} ${device.hidden ? 'bg-warning' : ''}`;
-                    node.style.left = x + 'px';
-                    node.style.top = y + 'px';
-                    node.innerHTML = `<i class="${getDeviceIcon(device.type)}"></i>`;
-                    node.title = `${device.name} (${device.ip})`;
-                    networkMap.appendChild(node);
-                    
-                    // إضافة اتصال بالراوتر للجهاز الحالي
-                    if (device.ip === '192.168.8.107') {
-                        const router = devices.find(d => d.type === 'router');
-                        if (router) {
-                            const routerIndex = devices.indexOf(router);
-                            const routerAngle = (routerIndex / devices.length) * 2 * Math.PI;
-                            const routerX = 150 + radius * Math.cos(routerAngle);
-                            const routerY = 150 + radius * Math.sin(routerAngle);
-                            
-                            const length = Math.sqrt(Math.pow(x - routerX, 2) + Math.pow(y - routerY, 2));
-                            const angleDeg = Math.atan2(y - routerY, x - routerX) * 180 / Math.PI;
-                            
-                            const connection = document.createElement('div');
-                            connection.className = 'connection';
-                            connection.style.width = length + 'px';
-                            connection.style.left = routerX + 30 + 'px';
-                            connection.style.top = routerY + 30 + 'px';
-                            connection.style.transform = `rotate(${angleDeg}deg)`;
-                            networkMap.appendChild(connection);
-                        }
+                    if (protocolValue !== 'all') {
+                        matchesProtocol = conn.protocol.toLowerCase() === protocolValue;
                     }
+                    
+                    if (statusValue !== 'all') {
+                        matchesStatus = conn.status.toLowerCase() === statusValue;
+                    }
+                    
+                    if (searchValue) {
+                        matchesSearch = 
+                            conn.protocol.toLowerCase().includes(searchValue) ||
+                            conn.local.toLowerCase().includes(searchValue) ||
+                            conn.foreign.toLowerCase().includes(searchValue) ||
+                            conn.status.toLowerCase().includes(searchValue) ||
+                            conn.pid.toString().includes(searchValue);
+                    }
+                    
+                    return matchesProtocol && matchesStatus && matchesSearch;
                 });
+                
+                updateConnectionsTable();
+                updateStats();
             }
             
-            // الحصول على أيقونة الجهاز
-            function getDeviceIcon(type) {
-                const icons = {
-                    'router': 'fa-router',
-                    'pc': 'fa-desktop',
-                    'phone': 'fa-mobile-alt',
-                    'tablet': 'fa-tablet-alt',
-                    'tv': 'fa-tv',
-                    'printer': 'fa-print',
-                    'server': 'fa-server',
-                    'iot': 'fa-microchip'
-                };
-                return `fas ${icons[type] || 'fa-network-wired'}`;
+            // فرز البيانات
+            function sortData(sortKey, direction) {
+                filteredConnections.sort((a, b) => {
+                    let valueA = a[sortKey];
+                    let valueB = b[sortKey];
+                    
+                    if (typeof valueA === 'string') {
+                        valueA = valueA.toLowerCase();
+                        valueB = valueB.toLowerCase();
+                    }
+                    
+                    if (valueA < valueB) return direction === 'asc' ? -1 : 1;
+                    if (valueA > valueB) return direction === 'asc' ? 1 : -1;
+                    return 0;
+                });
+                
+                updateConnectionsTable();
             }
             
-            // الحصول على اسم نوع الجهاز بالعربية
-            function getDeviceTypeName(type) {
-                const typeNames = {
-                    'router': 'موجه',
-                    'pc': 'كمبيوتر',
-                    'phone': 'هاتف',
-                    'tablet': 'لوحي',
-                    'tv': 'تلفاز',
-                    'printer': 'طابعة',
-                    'server': 'خادم',
-                    'iot': 'جهاز ذكي'
-                };
-                return typeNames[type] || 'جهاز';
-            }
+            // إضافة مستمعي الأحداث
+            refreshBtn.addEventListener('click', function() {
+                // في تطبيق حقيقي، هنا سيتم جلب البيانات من الخادم
+                initData();
+            });
             
-            // الحصول على صنف Badge بناءً على نوع الجهاز
-            function getDeviceBadgeClass(type) {
-                const classes = {
-                    'router': 'bg-danger',
-                    'pc': 'bg-primary',
-                    'phone': 'bg-success',
-                    'tablet': 'bg-warning',
-                    'tv': 'bg-info',
-                    'printer': 'bg-secondary',
-                    'server': 'bg-dark',
-                    'iot': 'bg-purple'
-                };
-                return classes[type] || 'bg-secondary';
-            }
+            clearBtn.addEventListener('click', function() {
+                connections = [];
+                filteredConnections = [];
+                updateConnectionsTable();
+                updateStats();
+            });
             
-            // إضافة مستمع الحدث للزر
-            scanBtn.addEventListener('click', simulateScan);
+            protocolFilter.addEventListener('change', applyFilters);
+            statusFilter.addEventListener('change', applyFilters);
+            searchInput.addEventListener('input', applyFilters);
             
-            // تهيئة أولية
-            pcsCount.textContent = '0';
-            phonesCount.textContent = '0';
-            otherCount.textContent = '0';
-            totalDevices.textContent = '0';
-            hiddenDevices.textContent = '0';
+            tableHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const sortKey = this.dataset.sort;
+                    const currentDirection = this.getAttribute('data-direction') || 'asc';
+                    const newDirection = currentDirection === 'asc' ? 'desc' : 'asc';
+                    
+                    // إعادة تعليمات الاتجاه لجميع الرؤوس
+                    tableHeaders.forEach(h => {
+                        h.innerHTML = h.innerHTML.replace(' ▼', '').replace(' ▲', '');
+                        h.removeAttribute('data-direction');
+                    });
+                    
+                    // تعيين الاتجاه الجديد للرأس الحالي
+                    this.setAttribute('data-direction', newDirection);
+                    this.innerHTML = this.innerHTML + (newDirection === 'asc' ? ' ▲' : ' ▼');
+                    
+                    sortData(sortKey, newDirection);
+                });
+            });
+            
+            // تهيئة البيانات عند تحميل الصفحة
+            initData();
+            
+            // محاكاة التحديث التلقائي كل 30 ثانية
+            setInterval(() => {
+                // في تطبيق حقيقي، هنا سيتم جلب البيانات من الخادم
+                console.log('تحديث تلقائي للبيانات...');
+            }, 30000);
         });
     </script>
 </body>
